@@ -1,0 +1,74 @@
+:root {
+  --bg: #0f172a;
+  --fg: #e2e8f0;
+  --muted: #94a3b8;
+  --canvas-border: #1e293b;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Prevent pull-to-refresh / double-tap zoom interfering with gameplay */
+  touch-action: manipulation;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: env(safe-area-inset-top, 0) 1rem env(safe-area-inset-bottom, 0);
+}
+
+#game {
+  /* Scale to viewport while preserving the 2:3 aspect ratio */
+  width: min(400px, 92vw, calc((100vh - 4rem) * 2 / 3));
+  height: auto;
+  aspect-ratio: 2 / 3;
+  border: 4px solid var(--canvas-border);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  background: #70c5ce;
+}
+
+#game:focus-visible {
+  outline: 3px solid #facc15;
+  outline-offset: 4px;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
