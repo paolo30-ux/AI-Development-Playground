@@ -20,6 +20,28 @@
   const STORAGE_KEY = 'flappy-best-score';
   const RESTART_DELAY_MS = 400; // stops a frantic flap-tap from skipping the game-over screen
 
+  // ---------- Sample design system ----------
+  // These tokens formalize the palette and styles used by the canvas and welcome screen.
+  const DESIGN_SYSTEM = {
+    color: {
+      sky: { start: '#4ec0ca', end: '#c9ecf0', canvas: '#70c5ce' },
+      pipe: { fill: '#5cb85c', outline: '#2d6a2d' },
+      ground: { soil: '#ded895', grass: '#73bf2e', grassStripe: '#5aa023', soilLine: '#c9b95f' },
+      bird: { body: '#f7d046', outline: '#a77d00', wing: '#f0a500', beak: '#ef6c1a' },
+      text: { primary: '#ffffff', ink: '#000000', display: '#facc15', muted: '#543847', danger: '#ff6b4a' },
+      panel: { fill: '#ded895', outline: '#543847', overlay: 'rgba(0, 0, 0, 0.45)' },
+    },
+    typography: {
+      family: 'system-ui, sans-serif',
+      weight: 700,
+      size: { score: 52, title: 44, modalTitle: 42, value: 38, label: 20, prompt: 20, restart: 18, brand: 18.5 },
+    },
+    spacing: { unit: 4, xs: 4, sm: 8, md: 12, lg: 16, xl: 24 },
+    radius: { panel: 12 },
+    border: { bird: 2, pipe: 3, panel: 4 },
+    shadow: { panel: 'rgba(0, 0, 0, 0.22)', blur: 12, offsetY: 5 },
+  };
+
   // ---------- Setup ----------
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
@@ -185,8 +207,8 @@
   // ---------- Rendering ----------
   function drawBackground() {
     const sky = ctx.createLinearGradient(0, 0, 0, PLAY_H);
-    sky.addColorStop(0, '#4ec0ca');
-    sky.addColorStop(1, '#c9ecf0');
+    sky.addColorStop(0, DESIGN_SYSTEM.color.sky.start);
+    sky.addColorStop(1, DESIGN_SYSTEM.color.sky.end);
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, W, H);
   }
@@ -194,9 +216,9 @@
   function drawPipes() {
     for (const p of pipes) {
       const bottomY = p.topHeight + PIPE.gap;
-      ctx.fillStyle = '#5cb85c';
-      ctx.strokeStyle = '#2d6a2d';
-      ctx.lineWidth = 3;
+      ctx.fillStyle = DESIGN_SYSTEM.color.pipe.fill;
+      ctx.strokeStyle = DESIGN_SYSTEM.color.pipe.outline;
+      ctx.lineWidth = DESIGN_SYSTEM.border.pipe;
 
       // Bodies
       ctx.fillRect(p.x, 0, PIPE.width, p.topHeight);
@@ -215,17 +237,17 @@
   }
 
   function drawGround() {
-    ctx.fillStyle = '#ded895';
+    ctx.fillStyle = DESIGN_SYSTEM.color.ground.soil;
     ctx.fillRect(0, PLAY_H, W, GROUND_H);
-    ctx.fillStyle = '#73bf2e';
+    ctx.fillStyle = DESIGN_SYSTEM.color.ground.grass;
     ctx.fillRect(0, PLAY_H, W, 14);
 
     // Moving stripes
-    ctx.fillStyle = '#5aa023';
+    ctx.fillStyle = DESIGN_SYSTEM.color.ground.grassStripe;
     for (let x = -groundOffset; x < W; x += 24) {
       ctx.fillRect(x, PLAY_H, 12, 14);
     }
-    ctx.fillStyle = '#c9b95f';
+    ctx.fillStyle = DESIGN_SYSTEM.color.ground.soilLine;
     ctx.fillRect(0, PLAY_H + 14, W, 3);
   }
 
@@ -235,32 +257,32 @@
     ctx.rotate(bird.rotation);
 
     // Body
-    ctx.fillStyle = '#f7d046';
-    ctx.strokeStyle = '#a77d00';
-    ctx.lineWidth = 2;
+    ctx.fillStyle = DESIGN_SYSTEM.color.bird.body;
+    ctx.strokeStyle = DESIGN_SYSTEM.color.bird.outline;
+    ctx.lineWidth = DESIGN_SYSTEM.border.bird;
     ctx.beginPath();
     ctx.arc(0, 0, BIRD.radius, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
 
     // Wing
-    ctx.fillStyle = '#f0a500';
+    ctx.fillStyle = DESIGN_SYSTEM.color.bird.wing;
     ctx.beginPath();
     ctx.ellipse(-4, 3, 7, 4.5, -0.3, 0, Math.PI * 2);
     ctx.fill();
 
     // Eye
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = DESIGN_SYSTEM.color.text.primary;
     ctx.beginPath();
     ctx.arc(6, -4, 4.5, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = DESIGN_SYSTEM.color.text.ink;
     ctx.beginPath();
     ctx.arc(7.5, -4, 2, 0, Math.PI * 2);
     ctx.fill();
 
     // Beak
-    ctx.fillStyle = '#ef6c1a';
+    ctx.fillStyle = DESIGN_SYSTEM.color.bird.beak;
     ctx.beginPath();
     ctx.moveTo(10, 0);
     ctx.lineTo(20, 3);
@@ -271,48 +293,57 @@
     ctx.restore();
   }
 
-  function drawText(text, x, y, size, color = '#fff') {
-    ctx.font = `bold ${size}px system-ui, sans-serif`;
+  function drawText(text, x, y, size, color = DESIGN_SYSTEM.color.text.primary, outlined = true) {
+    ctx.font = `${DESIGN_SYSTEM.typography.weight} ${size}px ${DESIGN_SYSTEM.typography.family}`;
     ctx.textAlign = 'center';
-    ctx.lineJoin = 'round';
-    ctx.lineWidth = Math.max(3, size / 7);
-    ctx.strokeStyle = '#000';
-    ctx.strokeText(text, x, y);
+    if (outlined) {
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = Math.max(3, size / 7);
+      ctx.strokeStyle = DESIGN_SYSTEM.color.text.ink;
+      ctx.strokeText(text, x, y);
+    }
     ctx.fillStyle = color;
     ctx.fillText(text, x, y);
   }
 
   function drawHUD() {
     if (state === State.PLAYING) {
-      drawText(String(score), W / 2, 80, 52);
+      drawText(String(score), W / 2, 80, DESIGN_SYSTEM.typography.size.score);
     }
 
     if (state === State.READY) {
-      drawText('Flappy Bird', W / 2, 150, 44, '#facc15');
-      drawText('Press Space or tap to start', W / 2, 400, 20);
+      drawText('PaoPao Gaming Inc.', W / 2, 102, DESIGN_SYSTEM.typography.size.brand, DESIGN_SYSTEM.color.text.primary, false);
+      drawText('Flappy Bird', W / 2, 150, DESIGN_SYSTEM.typography.size.title, DESIGN_SYSTEM.color.text.display);
+      drawText('Press Space or tap to start', W / 2, 400, DESIGN_SYSTEM.typography.size.prompt);
     }
 
     if (state === State.GAME_OVER) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      ctx.fillStyle = DESIGN_SYSTEM.color.panel.overlay;
       ctx.fillRect(0, 0, W, H);
 
-      ctx.fillStyle = '#ded895';
-      ctx.strokeStyle = '#543847';
-      ctx.lineWidth = 4;
+      ctx.fillStyle = DESIGN_SYSTEM.color.panel.fill;
+      ctx.strokeStyle = DESIGN_SYSTEM.color.panel.outline;
+      ctx.lineWidth = DESIGN_SYSTEM.border.panel;
+      ctx.shadowColor = DESIGN_SYSTEM.shadow.panel;
+      ctx.shadowBlur = DESIGN_SYSTEM.shadow.blur;
+      ctx.shadowOffsetY = DESIGN_SYSTEM.shadow.offsetY;
       ctx.beginPath();
-      ctx.roundRect(70, 190, 260, 190, 12);
+      ctx.roundRect(70, 190, 260, 190, DESIGN_SYSTEM.radius.panel);
       ctx.fill();
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
       ctx.stroke();
 
-      drawText('Game Over', W / 2, 160, 42, '#ff6b4a');
-      ctx.fillStyle = '#543847';
-      ctx.font = 'bold 20px system-ui, sans-serif';
+      drawText('Game Over', W / 2, 160, DESIGN_SYSTEM.typography.size.modalTitle, DESIGN_SYSTEM.color.text.danger);
+      ctx.fillStyle = DESIGN_SYSTEM.color.text.muted;
+      ctx.font = `${DESIGN_SYSTEM.typography.weight} ${DESIGN_SYSTEM.typography.size.label}px ${DESIGN_SYSTEM.typography.family}`;
       ctx.textAlign = 'center';
       ctx.fillText('SCORE', W / 2, 230);
       ctx.fillText('BEST', W / 2, 305);
-      drawText(String(score), W / 2, 270, 38);
-      drawText(String(best), W / 2, 345, 38, '#facc15');
-      drawText('Press Enter or tap to restart', W / 2, 430, 18);
+      drawText(String(score), W / 2, 270, DESIGN_SYSTEM.typography.size.value);
+      drawText(String(best), W / 2, 345, DESIGN_SYSTEM.typography.size.value, DESIGN_SYSTEM.color.text.display);
+      drawText('Press Enter or tap to restart', W / 2, 430, DESIGN_SYSTEM.typography.size.restart);
     }
   }
 
